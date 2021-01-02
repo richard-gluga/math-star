@@ -1,0 +1,191 @@
+body {
+    background: #ffffff;
+    padding: 20px;
+    font-family: Helvetica;
+    overflow: hidden; 
+}
+
+#unsupported-browser {
+    display: none;
+    width: 100%;
+    margin-top: 40px;
+    text-align: center;
+    vertical-align: center;
+}
+
+#unsupported-browser .icon {
+    font-size: 52px;
+    margin-bottom: 30px;
+}
+
+#unsupported-browser .error {
+    font-size: 16px;
+    width: 300px;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#unsupported-browser .details {
+    font-size: 9px;
+    width: 400px;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 12px;
+    margin-top: 30px;
+}
+
+#stars {
+    width: 100%;
+    font-size: 48px;
+    text-align: center;
+}
+
+#stars table {
+    margin-left: auto;
+    margin-right: auto;
+    width: 550px;
+    table-layout: fixed;
+}
+
+#stars td {
+    border: solid black 1px;
+    height: 50px;
+}
+
+#question {
+    padding-top: 40px;
+}
+
+#question,
+#output {
+    display: block;
+    width: 100%;
+    text-align: center;
+    font-size: 52px;
+    font-weight: bold;
+    padding-bottom: 40px;
+}
+
+#settings-btn {
+    cursor: pointer;
+    font-size: 36px;
+    opacity: 0.7;
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    z-index: 1000;
+}
+
+#settings-btn:hover {
+    opacity: 1;
+}
+
+
+#settings-dialog {
+    border: none;
+    border-radius: 6px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+}
+
+#settings-dialog::backdrop {
+    background-color: black;
+    opacity: 0.5;
+}
+
+#settings-dialog td {
+    padding-bottom: 20px;
+    padding-right: 30px;
+}
+
+.op-label {
+    font-size: 32px;
+}
+
+input[type=number] {
+    width: 50px;
+    line-height: 30px;
+    font-size: 18px;
+}
+
+input[type=number]::-webkit-inner-spin-button {
+    width: 100px;
+    height: 30px;
+}
+
+/* Checkbox Styles */
+/* https://medium.com/claritydesignsystem/pure-css-accessible-checkboxes-and-radios-buttons-54063e759bb3 */
+body {
+    line-height: 24px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+.checkbox {
+    padding-right: 20px;
+}
+
+.checkbox input[type="checkbox"] {
+    float: right;
+    opacity: 0;
+}
+
+.checkbox label {
+    position: relative;
+    display: inline-block;
+
+    /*16px width of fake checkbox + 6px distance between fake checkbox and text*/
+    padding-left: 42px;
+}
+
+.checkbox label::before,
+.checkbox label::after {
+    position: absolute;
+    content: "";
+
+    /*Needed for the line-height to take effect*/
+    display: inline-block;
+}
+
+/*Outer box of the fake checkbox*/
+.checkbox label::before {
+    height: 30px;
+    width: 30px;
+
+    border: 1px solid;
+    left: 0px;
+
+    /*(24px line-height - 16px height of fake checkbox) / 2 - 1px for the border
+*to vertically center it.
+*/
+    top: -4px;
+}
+
+/*Checkmark of the fake checkbox*/
+.checkbox label::after {
+    height: 10px;
+    width: 18px;
+    border-left: 2px solid;
+    border-bottom: 2px solid;
+
+    transform: rotate(-45deg);
+
+    left: 7px;
+    top: 4px;
+}
+
+/*Hide the checkmark by default*/
+.checkbox input[type="checkbox"]+label::after {
+    content: none;
+}
+
+/*Unhide on the checked state*/
+.checkbox input[type="checkbox"]:checked+label::after {
+    content: "";
+}
+
+/*Adding focus styles on the outer-box of the fake checkbox*/
+.checkbox input[type="checkbox"]:focus+label::before {
+    outline: rgb(59, 153, 252) auto 5px;
+}
