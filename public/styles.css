@@ -100,6 +100,27 @@ body {
     opacity: 1;
 }
 
+#permissions-dialog {
+    border: none;
+    border-radius: 6px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+    width: 95vw;
+    max-width: 650px;
+    text-align: left;
+    font-size: calc(12px + 0.9vh);
+}
+#permissions-dialog::backdrop {
+    background-color: black;
+    opacity: 0.7;
+}
+#permissions-close-btn {
+    margin-left: auto;
+    margin-right: auto;
+    font-size: calc(12px + 0.9vh);
+    height: calc(36px + 1.1vh);
+    line-height: inherit;
+}
+
 #about-btn {
     float: right;
     position: relative;

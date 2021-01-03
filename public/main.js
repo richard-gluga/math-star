@@ -21,6 +21,17 @@ if (typeof HTMLDialogElement === 'function'
     throw new Error("Unsupported browser!");
 }
 
+// Check permissions for microphone.
+navigator.permissions.query({ name: 'microphone' }).then(function (result) {
+    if (result.state == 'granted') {
+        console.info('micrphone permission is granted, phew!');
+    } else if (result.state == 'prompt') {
+        $('#permissions-dialog').showModal();
+    } else {
+        $('#permissions-dialog').showModal();
+    }
+});
+
 // Set of options passed to a game that define numbers, operators and other constants.
 // Defaults are used for quick-play, user can change via a settings dialog.
 class Options {
@@ -46,6 +57,7 @@ class Game {
         this.options = options;
         this.reset();
         this.onpause = null;
+        this.playingSounds = new Map();
     }
 
     setOptions(options) {
@@ -61,12 +73,6 @@ class Game {
         this.round = 0;
         this.streak = 0;
         if (this.recognition) this.recognition.abort();
-
-        // Unicode characters used to mark correct answers.
-        this.starChars = [
-            "⭐", "🦄", "🐴", "🐶", "🦊", "🐱", "🐮",
-            "🐹", "🐰", "🐻", "🐨", "🐼", "🐥", "🦉",
-            "🐸", "🐙", "🌈", "🐞", "🚀", "😃", "🧁"];
 
         // Clear previous table icons and other UI state.
         document.querySelectorAll(`#marks table td`).forEach((el) => el.textContent = '');
@@ -86,6 +92,13 @@ class Game {
         this.paused = false;
 
         $('#fireworks').style.display = 'none';
+        // Try to stop all playing sound effects.
+        for (const [key, value] of this.playingSounds.entries()) {
+            if (value instanceof HTMLMediaElement) {
+                value.pause();
+            }
+        }
+
         document.querySelector('#game-panel').style.display = 'block';
         $('#question').textContent = 'get ready';
         await this.speak('get ready');
@@ -197,13 +210,13 @@ class Game {
         if (this.streak < this.options.streak) this.streak++;
 
         // Insert correct answer img sticker        
-        const img = document.createElement('img'); 
+        const img = document.createElement('img');
         img.src = 'images/star2.gif';
         document.querySelector(`#marks table td:nth-of-type(${this.streak})`).appendChild(img);
 
         // play correct answer jingle
         await this.playSound('sfx/right1.mp3');
-        
+
         // play correct answer robot speech
         const rightAnswers = [
             'right', 'yep', 'you got it', 'correct', 'bingo', 'perfect',
@@ -235,7 +248,10 @@ class Game {
     async playSound(url, delay = 0) {
         const promise = new Promise(resolve => {
             const sound = new Audio(url);
+            this.playingSounds.set(url, sound);  // Keep a reference to it so it can be paused if necessary.
+
             sound.onended = () => {
+                this.playingSounds.delete(url);
                 setTimeout(() => resolve(), delay);
             };
             sound.play().then(() => {
@@ -412,6 +428,7 @@ class App {
     run() {
         this.initEventHandlers();
         this.openSettingsDialog();
+        this.game.getSpeechResponse();  // this triggers the microphone permissions
     }
 
     initEventHandlers() {
@@ -446,7 +463,9 @@ class App {
 
         // Wire events to show and hide the About dialog.
         $('#about-btn').onclick = () => this.openAboutDialog();
-        $('#about-close-btn').onclick = () => $('#about-dialog').close();;
+        $('#about-close-btn').onclick = () => $('#about-dialog').close();
+
+        $('#permissions-close-btn').onclick = () => $('#permissions-dialog').close();
     }
 
     openAboutDialog() {
