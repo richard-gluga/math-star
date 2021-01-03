@@ -87,6 +87,7 @@ body {
 }
 
 #settings-btn {
+    color: yellow;
     cursor: pointer;
     font-size: 36px;
     opacity: 0.7;

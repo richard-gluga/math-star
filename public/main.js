@@ -342,7 +342,7 @@ class Game {
             const timeout = setTimeout(() => {
                 resolve(null);
                 console.warn("No events from speech recognizer after 5s, aborting.");
-            }, 5000);
+            }, 7000);
 
             // Called from speech recognizer event handlers after words were detected.
             const processResult = (event) => {
