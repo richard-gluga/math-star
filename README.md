@@ -1,3 +1,6 @@
+# Credits
+Sound effects from: https://www.zapsplat.com/
+
 # Deploy Quick Guide
 
 1. To deploy to live Firebase instance, run from local directory:

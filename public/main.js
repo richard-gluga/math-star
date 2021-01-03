@@ -125,8 +125,7 @@ class Game {
         $('#output').textContent = '🎤';
         const answer = await this.getSpeechResponse();
         console.log('listenForAnswer got: ', answer);
-        // this.rightAnswer(answer);  // TODO - REMOVE
-        // $('#fireworks').style.display = 'block';  // TODO - REMOVE
+
         if (answer && !this.censorAnswer(answer)) {
             this.processAnswer(answer);
         } else {  // null/empty/censored answer, something went wrong, try again.
@@ -157,21 +156,8 @@ class Game {
             await this.wrongAnswer(answer);
         }
 
-        const progress = this.streak * 100 / this.options.streak;
-
-        if (progress == 100) {
-            // game over, congrats
-            $('#fireworks').style.display = 'block';
-            const congrats = [
-                `well done, you got ${this.options.streak} right in a row, that's amazing, congratulations`,
-                `amazing, you got ${this.options.streak} right in a row, I did not expect that, you rock`,
-                `oh what cool, you got ${this.options.streak} right in a row, it's party time, let's get the music started`,
-                `bingo bango, you got ${this.options.streak} right in a row, easy peasy lemon squeazy`,
-                `01101001, you got ${this.options.streak} right in a row, that's 11010101, well done`,
-                `yo, well done, congratulations, you deserve to party, get your groove on`,
-            ];
-            await this.speak(congrats[this.getRandomIntInclusive(0, congrats.length - 1)], 1.2, 1.2);
-            this.pause();  // will bring up options dialog
+        if (this.streak >= this.options.streak) {
+            this.wonGame();
         } else {
             // trigger next round
             setTimeout(() => this.startNextRound(), 10);
@@ -193,6 +179,9 @@ class Game {
 
         document.querySelector(`#marks table td:nth-of-type(${this.streak + 1})`).innerHTML = '';
 
+        // play correct answer jingle
+        await this.playSound('sfx/wrong1.mp3');
+
         const wrongAnswers = [
             'wrong', 'nope', 'oops', 'nada', 'boom boom', 'yikes', 'not even close', 'umm... no',
         ];
@@ -207,20 +196,55 @@ class Game {
         $('#output').style.color = 'green';
         if (this.streak < this.options.streak) this.streak++;
 
-        // TODO - remove
-        //document.querySelector(`#marks table td:nth-of-type(${this.streak})`).textContent =
-        //    this.starChars[this.getRandomIntInclusive(0, this.starChars.length - 1)];
-        
+        // Insert correct answer img sticker        
         const img = document.createElement('img'); 
         img.src = 'images/star2.gif';
         document.querySelector(`#marks table td:nth-of-type(${this.streak})`).appendChild(img);
 
-
+        // play correct answer jingle
+        await this.playSound('sfx/right1.mp3');
+        
+        // play correct answer robot speech
         const rightAnswers = [
             'right', 'yep', 'you got it', 'correct', 'bingo', 'perfect',
         ];
         await this.speak(rightAnswers[this.getRandomIntInclusive(0, rightAnswers.length - 1)], 1.2, 1.2);
         return;
+    }
+
+    async wonGame() {
+        // game over, congrats
+        // show fireworks with sounds and play winning jingle
+        $('#fireworks').style.display = 'block';
+        this.playSound('sfx/fireworks1.mp3');
+        await this.playSound('sfx/win1.mp3');
+
+        // after winning jingle, say something 'funny'
+        const congrats = [
+            `well done, you got ${this.options.streak} right in a row, that's amazing, congratulations`,
+            `amazing, you got ${this.options.streak} right in a row, I did not expect that, you rock`,
+            `oh what cool, you got ${this.options.streak} right in a row, it's party time, let's get the music started`,
+            `bingo bango, you got ${this.options.streak} right in a row, easy peasy lemon squeazy`,
+            `01101001, you got ${this.options.streak} right in a row, that's 11010101, well done`,
+            `yo, well done, congratulations, you deserve to party, get your groove on`,
+        ];
+        await this.speak(congrats[this.getRandomIntInclusive(0, congrats.length - 1)], 1.2, 1.2);
+        this.pause();  // will bring up options dialog
+    }
+
+    async playSound(url, delay = 0) {
+        const promise = new Promise(resolve => {
+            const sound = new Audio(url);
+            sound.onended = () => {
+                setTimeout(() => resolve(), delay);
+            };
+            sound.play().then(() => {
+                // audio started playing, let it finish.
+            }).catch((err) => {
+                console.warn('Error playing audio: ', url, err);
+            });
+        });
+        return promise;
     }
 
     // Generates and returns a new question as a string expression.
@@ -368,7 +392,6 @@ class Game {
             utterThis.pitch = 1;
             utterThis.rate = 1;
             utterThis.onend = () => {
-                console.log("resolved");
                 resolve();  // resolves promise after speaking finished
             }
             synth.speak(utterThis);
@@ -407,6 +430,7 @@ class App {
             }
         };
         $('#play-btn').onclick = () => {
+
             // update options
             this.options.op_add = $('#cb_add').checked;
             this.options.op_sub = $('#cb_sub').checked;
@@ -419,6 +443,14 @@ class App {
             $('#settings-dialog').close();
             this.game.play();
         };
+
+        // Wire events to show and hide the About dialog.
+        $('#about-btn').onclick = () => this.openAboutDialog();
+        $('#about-close-btn').onclick = () => $('#about-dialog').close();;
+    }
+
+    openAboutDialog() {
+        $('#about-dialog').showModal();
     }
 
     openSettingsDialog() {
