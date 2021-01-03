@@ -105,11 +105,17 @@ body {
     border: none;
     border-radius: 6px;
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+    width: 90vw;
+    max-width: 600px;
 }
 
 #settings-dialog::backdrop {
     background-color: black;
     opacity: 0.5;
+}
+
+#settings-dialog table {
+    font-size: 2.0vh;
 }
 
 #settings-dialog td {
@@ -131,16 +137,19 @@ input[type=number] {
     font-size: 10px;
 }
 
+#play-btn {
+    font-size: 2.0vh;
+}
+
 /* Checkbox Styles */
 /* https://medium.com/claritydesignsystem/pure-css-accessible-checkboxes-and-radios-buttons-54063e759bb3 */
 body {
     line-height: 24px;
-    font-size: 16px;
     box-sizing: border-box;
 }
 
 .checkbox {
-    padding-right: 20px;
+    padding-right: 10px;
 }
 
 .checkbox input[type="checkbox"] {
