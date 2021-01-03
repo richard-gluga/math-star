@@ -69,7 +69,7 @@ class Game {
             "🐸", "🐙", "🌈", "🐞", "🚀", "😃", "🧁"];
 
         // Clear previous table icons and other UI state.
-        document.querySelectorAll(`#stars table td`).forEach((el) => el.textContent = '');
+        document.querySelectorAll(`#marks table td`).forEach((el) => el.textContent = '');
         $('#question').textContent = '';
         $('#output').textContent = '';
     }
@@ -125,6 +125,8 @@ class Game {
         $('#output').textContent = '🎤';
         const answer = await this.getSpeechResponse();
         console.log('listenForAnswer got: ', answer);
+        // this.rightAnswer(answer);  // TODO - REMOVE
+        // $('#fireworks').style.display = 'block';  // TODO - REMOVE
         if (answer && !this.censorAnswer(answer)) {
             this.processAnswer(answer);
         } else {  // null/empty/censored answer, something went wrong, try again.
@@ -189,7 +191,7 @@ class Game {
         $('#output').style.color = 'red';
         if (this.streak > 0) this.streak--;
 
-        document.querySelector(`#stars table td:nth-of-type(${this.streak + 1})`).textContent = '';
+        document.querySelector(`#marks table td:nth-of-type(${this.streak + 1})`).innerHTML = '';
 
         const wrongAnswers = [
             'wrong', 'nope', 'oops', 'nada', 'boom boom', 'yikes', 'not even close', 'umm... no',
@@ -205,8 +207,14 @@ class Game {
         $('#output').style.color = 'green';
         if (this.streak < this.options.streak) this.streak++;
 
-        document.querySelector(`#stars table td:nth-of-type(${this.streak})`).textContent =
-            this.starChars[this.getRandomIntInclusive(0, this.starChars.length - 1)];
+        // TODO - remove
+        //document.querySelector(`#marks table td:nth-of-type(${this.streak})`).textContent =
+        //    this.starChars[this.getRandomIntInclusive(0, this.starChars.length - 1)];
+        
+        const img = document.createElement('img'); 
+        img.src = 'images/star2.gif';
+        document.querySelector(`#marks table td:nth-of-type(${this.streak})`).appendChild(img);
+
 
         const rightAnswers = [
             'right', 'yep', 'you got it', 'correct', 'bingo', 'perfect',

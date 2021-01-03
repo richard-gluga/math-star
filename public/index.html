@@ -4,14 +4,22 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="md-button.css">
     <link rel="stylesheet" href="fireworks.css">
+    <link rel="stylesheet" href="stars.css">
 </head>
 
 <body>
+    <!-- Parallax Stars background from https://codepen.io/saransh/pen/BKJun-->
+    <div id='stars'></div>
+    <div id='stars2'></div>
+    <div id='stars3'></div>
+
+    <!-- Celebration fireworks on winning the game. -->
     <div id="fireworks" class="pyro" style="display: none">
         <div class="before"></div>
         <div class="after"></div>
     </div>
 
+    <!-- Error shown in case we don't support the browser :-( -->
     <div id="unsupported-browser">
         <div class="icon">😢</div>
         <div class="error">
@@ -28,6 +36,7 @@
         </div>
     </div>
 
+    <!-- The main game UI is within this container -->
     <div id="game-panel" style="display: none">
         <div id="settings-btn" title="Game Settings">⚙</div>
 
@@ -36,7 +45,7 @@
         <span id="mark" style="font-size: 30px"></span>
 
         <br /><br />
-        <div id="stars">
+        <div id="marks">
             <table>
                 <tr>
                     <td></td>
@@ -54,6 +63,7 @@
         </div>
     </div>
 
+    <!-- Settings dialog shown before starting the game and when game is paused. -->
     <dialog id="settings-dialog" title="Game Settings">
         <form method="dialog">
             <table>
@@ -84,9 +94,9 @@
                     <td>Fixed Term</td>
                     <td>
                         <input type="number" min="0" max="12" name="fix_num" id="fix_num" />
-                        <span class="checkbox">
+                        <span class="checkbox" style="position: relative; top: -20px">
                             <input type="checkbox" name="fix_num_on" id="fix_num_on" />
-                            <label for="fix_num_on">Tick to fix one of the two terms</label>
+                            <label for="fix_num_on"></label>
                         </span>
                     </td>
                 </tr>
