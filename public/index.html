@@ -152,16 +152,27 @@
             <p>
                 Microphone permission is required to play this game (so it can hear spoken answers).
             </p>
-            <p>
-                Please click allow if your browser or device is prompting you for it.
-            </p>
-            <p>
-                If there is no prompt, you may need to try in an incognito window in Chrome, or
-                uninstall and re-install if running as an Android app.
-            </p>
+            <div class="state-prompt" style="display: none">
+                <p>
+                    Please click allow in the permissions prompt before continuing.
+                </p>
+                <p>
+                    If you do not see the prompt, please refer to <a
+                        href="https://support.google.com/chrome/answer/2693767" target="_blank">this article</a> on how
+                    to enable it manually.
+                </p>
+            </div>
+            <div class="state-deny" style="display: none">
+                <p>
+                    It seems your Chrome browser is currently configured to block the microphone.
+                    To fix this, please follow the instructions in <a
+                        href="https://support.google.com/chrome/answer/2693767" target="_blank">this article</a> and
+                    allow microphone access before continuing.
+                </p>
+            </div>
         </div>
         <div style="width: 100%; text-align: center;">
-            <button id="permissions-close-btn" class="pure-material-button-contained">Close</button>
+            <button id="permissions-close-btn" class="pure-material-button-contained">Continue</button>
         </div>
 
     </dialog>

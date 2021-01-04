@@ -21,17 +21,6 @@ if (typeof HTMLDialogElement === 'function'
     throw new Error("Unsupported browser!");
 }
 
-// Check permissions for microphone.
-navigator.permissions.query({ name: 'microphone' }).then(function (result) {
-    if (result.state == 'granted') {
-        console.info('micrphone permission is granted, phew!');
-    } else if (result.state == 'prompt') {
-        $('#permissions-dialog').showModal();
-    } else {
-        $('#permissions-dialog').showModal();
-    }
-});
-
 // Set of options passed to a game that define numbers, operators and other constants.
 // Defaults are used for quick-play, user can change via a settings dialog.
 class Options {
@@ -53,11 +42,11 @@ class Options {
 // state on the HTML UI.
 class Game {
 
-    constructor(options) {
+    constructor(options, app) {
         this.options = options;
-        this.reset();
-        this.onpause = null;
         this.playingSounds = new Map();
+        this.reset();
+        this.app = app;
     }
 
     setOptions(options) {
@@ -84,7 +73,7 @@ class Game {
         if (this.paused) return;
         this.reset();
         document.querySelector('#game-panel').style.display = 'none';
-        if (this.onpause) this.onpause();
+        this.app.openSettingsDialog();
     }
 
     async play() {
@@ -121,7 +110,10 @@ class Game {
         this.round++;
 
         await this.showNextQuestion();  // display it to the user
-        this.listenForAnswer();  // listen for the answer
+        // listen for the answer, add a little delay so sounds don't overlap.
+        // on some devices, activating the microphone plays a sound that can't be
+        // disabled.
+        setTimeout(() => this.listenForAnswer(), 100);  
     }
 
     // Displays the next question in the UI to the user.
@@ -245,7 +237,7 @@ class Game {
         this.pause();  // will bring up options dialog
     }
 
-    async playSound(url, delay = 0) {
+    async playSound(url, delay = 200) {
         const promise = new Promise(resolve => {
             const sound = new Audio(url);
             this.playingSounds.set(url, sound);  // Keep a reference to it so it can be paused if necessary.
@@ -387,7 +379,11 @@ class Game {
             }
 
             recognition.onerror = (event) => {
-                // example errors: 'network', 'no-speech'
+                // example errors: 'network', 'no-speech', 'not-allowed'
+                if (event.error == 'not-allowed') {
+                    this.pause();
+                    this.app.checkMicrophonePermissions();
+                }
                 console.log('error: ', event.error);
                 recognition.stop();
                 setTimeout(() => processResult(event), 10); // returns no answer
@@ -421,14 +417,13 @@ class App {
 
     constructor() {
         this.options = new Options();
-        this.game = new Game(this.options);
-        this.game.onpause = () => this.openSettingsDialog();
+        this.game = new Game(this.options, this);
     }
 
-    run() {
+    async run() {
         this.initEventHandlers();
+        await this.checkMicrophonePermissions();
         this.openSettingsDialog();
-        this.game.getSpeechResponse();  // this triggers the microphone permissions
     }
 
     initEventHandlers() {
@@ -464,8 +459,6 @@ class App {
         // Wire events to show and hide the About dialog.
         $('#about-btn').onclick = () => this.openAboutDialog();
         $('#about-close-btn').onclick = () => $('#about-dialog').close();
-
-        $('#permissions-close-btn').onclick = () => $('#permissions-dialog').close();
     }
 
     openAboutDialog() {
@@ -489,6 +482,58 @@ class App {
         $('#fix_num_on').checked = this.options.fix_num != null;
 
         $('#settings-dialog').showModal();
+    }
+
+    async checkMicrophonePermissions() {
+        const promise = new Promise((resolve) => {
+            this.game.getSpeechResponse();  // this triggers the microphone permissions
+            setTimeout(() => {  // give the microphone permission request prompt some time to trigger
+                // Check permissions for microphone.
+                navigator.permissions.query({ name: 'microphone' }).then(function (result) {
+                    if (result.state == 'granted') {
+                        console.info('micrphone permission is granted, phew!');
+                        resolve();
+                    } else if (result.state == 'prompt') {
+                        console.info('prompting user for microphone permissions...');
+                        // Clicking continue/close button returns from function so game can continue.
+                        $('#permissions-close-btn').onclick = () => {
+                            $('#permissions-dialog').close();
+                            resolve();
+                        }
+
+                        // Show the correct prompt and open warning dialog.
+                        $('#permissions-dialog .state-prompt').style.display = 'block';
+                        $('#permissions-dialog').showModal();
+
+                        // Add a re-check loop, so when user allows the microphone permission, we 
+                        // close the dialog and continue automatically.
+                        const recheck = () => {
+                            console.info('...waiting for microphone permission');
+                            navigator.permissions.query({ name: 'microphone' }).then(function (result) {
+                                if (result.state == 'granted') {
+                                    $('#permissions-dialog').close();
+                                    resolve();
+                                } else if (result.state == 'prompt') {
+                                    setTimeout(() => recheck(), 1000);
+                                }
+                            });
+                        };
+                        recheck();
+
+                    } else {
+                        // Clicking continue/close button returns from function so game can continue.
+                        $('#permissions-close-btn').onclick = () => {
+                            $('#permissions-dialog').close();
+                            resolve();
+                        }
+
+                        $('#permissions-dialog .state-deny').style.display = 'block';
+                        $('#permissions-dialog').showModal();
+                    }
+                });
+            }, 50);
+        });
+        return promise;
     }
 }
 
