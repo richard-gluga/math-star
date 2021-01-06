@@ -24,6 +24,10 @@
                 android:name="android.support.customtabs.trusted.DEFAULT_URL"
                 android:value="https://math-star-game.web.app" />
 
+            <meta-data
+                android:name="android.support.customtabs.trusted.DISPLAY_MODE"
+                android:value="immersive"/>
+
             <!-- This intent-filter adds the Trusted Web Activity to the Android Launcher -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

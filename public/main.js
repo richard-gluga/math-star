@@ -383,7 +383,7 @@ class Game {
                 // example errors: 'network', 'no-speech', 'not-allowed'
                 if (event.error == 'not-allowed') {
                     this.pause();
-                    this.app.checkMicrophonePermissions();
+                    this.app.checkMicrophonePermissions(true);
                 }
                 console.log('error: ', event.error);
                 recognition.stop();
@@ -485,9 +485,9 @@ class App {
         $('#settings-dialog').showModal();
     }
 
-    async checkMicrophonePermissions() {
+    async checkMicrophonePermissions(skipTriggerSpeechResponse = false) {
         const promise = new Promise((resolve) => {
-            this.game.getSpeechResponse();  // this triggers the microphone permissions
+            if (!skipTriggerSpeechResponse) this.game.getSpeechResponse();  // this triggers the microphone permissions
             setTimeout(() => {  // give the microphone permission request prompt some time to trigger
                 // Check permissions for microphone.
                 navigator.permissions.query({ name: 'microphone' }).then(function (result) {

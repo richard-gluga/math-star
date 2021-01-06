@@ -1,5 +1,5 @@
 [{
     "relation": ["delegate_permission/common.handle_all_urls"],
     "target" : { "namespace": "android_app", "package_name": "com.gluga.mathstar",
-                 "sha256_cert_fingerprints": ["78:85:3D:9C:BC:F2:3B:68:57:6C:A9:4D:63:84:56:28:F2:8B:1B:F0:DE:2F:12:E1:F7:82:24:D5:7A:E2:46:ED"] }
+                 "sha256_cert_fingerprints": ["EE:82:5C:E1:53:0C:6B:67:4F:25:FE:10:DE:6B:5A:45:F4:39:E3:AA:1B:99:5C:01:C9:BB:AA:88:A6:48:68:03"] }
   }]

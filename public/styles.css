@@ -8,19 +8,29 @@ body {
 
 #unsupported-browser {
     display: none;
-    width: 100%;
-    margin-top: 40px;
+    background: white;
+    width: 75vw;
+    max-width: 550px;
+    margin-top: 50px;
+    margin-left: auto;
+    margin-right: auto;
     text-align: center;
     vertical-align: center;
+    border: none;
+    border-radius: 3px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+    padding: 15px;
+    opacity: 1;
 }
 
 #unsupported-browser .icon {
     font-size: 52px;
     margin-bottom: 30px;
+    margin-top: 15px;
 }
 
 #unsupported-browser .error {
-    font-size: 16px;
+    font-size: 1.5vh;
     width: 300px;
     text-align: center;
     margin-left: auto;
@@ -28,12 +38,11 @@ body {
 }
 
 #unsupported-browser .details {
-    font-size: 9px;
+    font-size: 1.3vh;
     width: 400px;
     text-align: center;
     margin-left: auto;
     margin-right: auto;
-    line-height: 12px;
     margin-top: 30px;
 }
 
