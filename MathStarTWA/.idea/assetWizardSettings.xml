@@ -79,8 +79,8 @@
                                             <option name="values">
                                               <map>
                                                 <entry key="color" value="000000" />
-                                                <entry key="imagePath" value="$PROJECT_DIR$/../math-star/public/images/icon512.png" />
-                                                <entry key="scalingPercent" value="135" />
+                                                <entry key="imagePath" value="$PROJECT_DIR$/../other_assets/icon_v2.png" />
+                                                <entry key="scalingPercent" value="71" />
                                               </map>
                                             </option>
                                           </PersistentState>
