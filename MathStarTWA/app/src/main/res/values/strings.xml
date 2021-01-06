@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Math Star</string>
+    <string name="asset_statements">
+        [{
+            \"relation\": [\"delegate_permission/common.handle_all_urls\"],
+            \"target\": {
+                \"namespace\": \"web\",
+                \"site\": \"https://math-star-game.web.app\"}
+        }]
+    </string>
+</resources>
