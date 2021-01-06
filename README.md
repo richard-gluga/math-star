@@ -7,4 +7,4 @@ Sound effects from: https://www.zapsplat.com/
 
 `firebase deploy --only hosting`
 
-2. Live URL is https://gluga-math-star.web.app/
+2. Live URL is https://math-star-game.web.app

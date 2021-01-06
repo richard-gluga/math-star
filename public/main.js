@@ -264,10 +264,11 @@ class Game {
             : this.getRandomIntInclusive(0, this.options.max_num);
         const op = this.getRandOperator();
 
-        // Prevent negative answers for now.
+        // Prevent negative answers for now (speech recognition not as reliable).
         if (op == '-' && term1 < term2) {
             [term1, term2] = [term2, term1];
-        } else if (this.options.fix_num) {  // for fixed terms, have it as the first term.
+        } else if (this.options.fix_num && term2 < term1) {  
+            // for fixed terms, have it as the first term, unless it would cause a negative
             [term1, term2] = [term2, term1];
         }
 
