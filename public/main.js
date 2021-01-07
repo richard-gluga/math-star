@@ -458,9 +458,19 @@ class App {
             this.game.play();
         };
 
+        $('#settings-dialog').addEventListener('cancel', (event) => {
+            event.preventDefault();
+            return false;
+        });
+
         // Wire events to show and hide the About dialog.
         $('#about-btn').onclick = () => this.openAboutDialog();
         $('#about-close-btn').onclick = () => $('#about-dialog').close();
+
+        $('#permissions-dialog').addEventListener('cancel', (event) => {
+            event.preventDefault();
+            return false;
+        });
     }
 
     openAboutDialog() {
