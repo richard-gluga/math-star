@@ -110,77 +110,32 @@ body {
     opacity: 1;
 }
 
-#permissions-dialog {
-    border: none;
-    border-radius: 6px;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
-    width: 95vw;
-    max-width: 650px;
-    text-align: left;
-    font-size: calc(12px + 0.9vh);
-}
-#permissions-dialog::backdrop {
-    background-color: black;
-    opacity: 0.7;
-}
-#permissions-close-btn {
-    margin-left: auto;
-    margin-right: auto;
-    font-size: calc(12px + 0.9vh);
-    height: calc(36px + 1.1vh);
-    line-height: inherit;
-}
 
-#about-btn {
-    float: right;
-    position: relative;
-    top: 5px;
-    right: 5px;
-    cursor: pointer;
-    font-size: 24px;
-    opacity: 0.7;
-    z-index: 5000;
-}
-
-#about-btn:hover {
-    opacity: 1;
-}
-
-#about-dialog {
-    border: none;
-    border-radius: 6px;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
-    width: 95vw;
-    max-width: 650px;
-    text-align: left;
-    font-size: calc(12px + 0.9vh);
-}
-#about-dialog::backdrop {
-    background-color: black;
-    opacity: 0.7;
-}
-
-#about-dialog h1 {
-    font-size: calc(12px + 1.5vh);
-}
-
-#about-dialog h2 {
-    font-size: calc(12px + 1.2vh);
-}
-#about-close-btn {
-    margin-left: auto;
-    margin-right: auto;
-    font-size: calc(12px + 0.9vh);
-    height: calc(36px + 1.1vh);
-    line-height: inherit;
-}
-
-#settings-dialog {
-    border: none;
-    border-radius: 6px;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+.mdl-dialog {
     width: 90vw;
-    max-width: 600px;
+    text-align: left;
+}
+
+#settings-dialog .operators .mdl-switch {
+    width: 40px;
+}
+#settings-dialog .operators .mdl-switch .mdl-switch__label {
+    font-size: 1.9em;
+    font-weight: bold;
+    color: black;
+}
+
+#settings-dialog .operators .spacer {
+    display: inline-block;
+    width: 60px;
+}
+#settings-dialog .row-spacer {
+    display: block;
+    height: 20px;
+}
+
+#settings-dialog input[type=number] {
+    font-size: 1.5em;
 }
 
 
@@ -202,21 +157,10 @@ body {
     font-size: 32px;
 }
 
-input[type=number] {
-    width: 60px;
-    height: 34px;
-    font-size: 18px;
-}
-
 .fix-label {
     font-size: 10px;
 }
 
-#play-btn {
-    font-size: calc(12px + 0.9vh);
-    height: calc(36px + 1.1vh);
-    line-height: inherit;
-}
 
 /* Checkbox Styles */
 /* https://medium.com/claritydesignsystem/pure-css-accessible-checkboxes-and-radios-buttons-54063e759bb3 */

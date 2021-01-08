@@ -432,26 +432,15 @@ class App {
         // Bind the gear icon to open settings Dialog.
         $('#settings-btn').onclick = () => this.openSettingsDialog();
 
-        // Bind settings dialog controls.
-        $('#fix_num_on').onchange = () => {
-            console.info('fix_num_on changed', $('#fix_num_on').checked);
-            if ($('#fix_num_on').checked) {
-                $('#fix_num').disabled = false;
-                $('#fix_num').value = 5;
-            } else {
-                $('#fix_num').disabled = true;
-                $('#fix_num').value = null;
-            }
-        };
+        // Bind events for settings dialog click on Play button
         $('#play-btn').onclick = () => {
-
             // update options
             this.options.op_add = $('#cb_add').checked;
             this.options.op_sub = $('#cb_sub').checked;
             this.options.op_mul = $('#cb_mul').checked;
 
             this.options.max_num = parseInt($('#max_num').value, 10);
-            this.options.fix_num = $('#fix_num_on').checked ? parseInt($('#fix_num').value, 10) : null;
+            this.options.fix_num = parseInt($('#fix_num').value, 10);
 
             // close dialog & play/unpause game.
             $('#settings-dialog').close();
@@ -481,17 +470,30 @@ class App {
         this.game.pause();
 
         // Bind checkbox values for the 4 operands based on latest options data. 
-        $('#cb_add').checked = this.options.op_add;
-        $('#cb_sub').checked = this.options.op_sub;
-        $('#cb_mul').checked = this.options.op_mul;
+        if (this.options.op_add) {
+            $('#cb_add').checked = this.options.op_add;
+            $('#cb_add').parentElement.MaterialSwitch.on();
+        }
+        if (this.options.op_sub) {
+            $('#cb_sub').checked = this.options.op_sub;
+            $('#cb_sub').parentElement.MaterialSwitch.on();
+        }
+        if (this.options.op_mul) {
+            $('#cb_mul').checked = this.options.op_mul;
+            $('#cb_mul').parentElement.MaterialSwitch.on();
+        }
+
 
         // Bind the max num value.
         $('#max_num').value = this.options.max_num;
+        $('#max_num').parentElement.MaterialTextfield.checkDirty();
 
         // Bind fix_num and checkbox state for enabling/disabling it.
-        $('#fix_num').value = this.options.fix_num == null ? null : this.options.fix_num;
-        $('#fix_num').disabled = this.options.fix_num == null;
-        $('#fix_num_on').checked = this.options.fix_num != null;
+        $('#fix_num').value = this.options.fix_num == null || isNaN(this.options.fix_num) ? null : this.options.fix_num;
+        $('#fix_num').parentElement.MaterialTextfield.checkDirty();
+
+
+        componentHandler.upgradeDom();
 
         $('#settings-dialog').showModal();
     }
