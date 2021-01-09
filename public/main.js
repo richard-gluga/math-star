@@ -464,7 +464,6 @@ class App {
     }
 
     showError(msg) {
-        console.log($('#toast-error'));
         $('#toast-error').MaterialSnackbar.showSnackbar({message: msg})
     }
 
