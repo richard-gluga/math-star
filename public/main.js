@@ -145,7 +145,7 @@ class Game {
     async processAnswer(answerRaw) {
         if (this.paused) return;
 
-        let answer = this.numberUtils.wordsToDigits(answerRaw);
+        let answer = this.app.numberUtils.wordsToDigits(answerRaw);
 
         $('#output').textContent = answer;
 
