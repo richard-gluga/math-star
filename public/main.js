@@ -188,7 +188,7 @@ class Game {
             if (this.streak > 0) this.streak--;
             $(`#marks table td:nth-of-type(${this.streak + 1})`).innerHTML = '';
         } else if (this.options.difficulty == 'hard') {  // lose all marks!
-            this.streak == 0;
+            this.streak = 0;
             $$(`#marks table td`).forEach(el => el.innerHTML = '');
         }
 
@@ -205,6 +205,8 @@ class Game {
     }
 
     async rightAnswer(answer) {
+        console.log('Right: ', this.streak);
+        
         // TODO: update stats, update display
         $('#output').style.color = 'green';
         if (this.streak < this.options.streak) this.streak++;
