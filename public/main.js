@@ -28,6 +28,7 @@ class Options {
         this.op_add = true; // boolean
         this.op_sub = true; // boolean
         this.op_mul = true; // boolean
+        this.op_div = false; // boolean
 
         this.max_num = 10;  // number
         this.fix_num = null;  // number
@@ -257,20 +258,23 @@ class Game {
 
     // Generates and returns a new question as a string expression.
     getNextQuestion() {
-        let term1 = this.getRandomIntInclusive(0, this.options.max_num);
-        console.log(Number.isInteger(this.options.fix_num));
-        let term2 = Number.isInteger(this.options.fix_num)
-            ? this.options.fix_num
-            : this.getRandomIntInclusive(0, this.options.max_num);
         const op = this.getRandOperator();
+
+        // Avoid zeros if we're doing division.
+        let term1 = this.getRandomIntInclusive(op == '/' ? 1 : 0, this.options.max_num);
+        console.log(Number.isInteger(this.options.fix_num));
+        let term2 = Number.isInteger(this.options.fix_num) && (this.options.fix_num > 0 || op != '/')
+            ? this.options.fix_num
+            : this.getRandomIntInclusive(op == '/' ? 1 : 0, this.options.max_num);
+        
 
         // Prevent negative answers for now (speech recognition not as reliable).
         if (op == '-' && term1 < term2) {
             [term1, term2] = [term2, term1];
-        } else if (this.options.fix_num && term2 < term1) {  
-            // for fixed terms, have it as the first term, unless it would cause a negative
-            [term1, term2] = [term2, term1];
-        }
+        } else if (op == '/') {  // ensure whole-number division answers
+            const ans = term1 * term2;
+            [term1, term2] = [ans, term2];
+        } 
 
         const question = `${term1} ${op} ${term2}`;
         console.info(`Next question: ${question}`);
@@ -284,6 +288,7 @@ class Game {
         if (this.options.op_add) selected++;
         if (this.options.op_sub) selected++;
         if (this.options.op_mul) selected++;
+        if (this.options.op_div) selected++;
 
         if (selected < 1) throw new Error("Did not select any operators.");
 
@@ -293,6 +298,7 @@ class Game {
         if (!op && this.options.op_add && i++ == rand) op = '+';
         if (!op && this.options.op_sub && i++ == rand) op = '-';
         if (!op && this.options.op_mul && i++ == rand) op = '*';
+        if (!op && this.options.op_div && i++ == rand) op = '/';
 
         console.info(`Next op: ${op} (out of ${selected} selected, rand ${rand})`);
 
@@ -438,6 +444,7 @@ class App {
             this.options.op_add = $('#cb_add').checked;
             this.options.op_sub = $('#cb_sub').checked;
             this.options.op_mul = $('#cb_mul').checked;
+            this.options.op_div = $('#cb_div').checked;
 
             this.options.max_num = parseInt($('#max_num').value, 10);
             this.options.fix_num = parseInt($('#fix_num').value, 10);
@@ -481,6 +488,10 @@ class App {
         if (this.options.op_mul) {
             $('#cb_mul').checked = this.options.op_mul;
             $('#cb_mul').parentElement.MaterialSwitch.on();
+        }
+        if (this.options.op_mdiv) {
+            $('#cb_mul').checked = this.options.op_div;
+            $('#cb_div').parentElement.MaterialSwitch.on();
         }
 
 

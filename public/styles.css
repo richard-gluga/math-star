@@ -127,7 +127,7 @@ body {
 }
 
 #settings-dialog .operators .mdl-switch {
-    width: 40px;
+    width: 30px;
 }
 #settings-dialog .operators .mdl-switch .mdl-switch__label {
     font-size: 1.9em;
@@ -137,7 +137,7 @@ body {
 
 #settings-dialog .operators .spacer {
     display: inline-block;
-    width: 60px;
+    width: 40px;
 }
 #settings-dialog .row-spacer {
     display: block;
