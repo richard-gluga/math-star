@@ -186,10 +186,10 @@ class Game {
         // for 'easy' mode, don't lose any marks for wrong answers, otherwise...
         if (this.options.difficulty == 'normal') {  // lose one mark
             if (this.streak > 0) this.streak--;
-            document.querySelector(`#marks table td:nth-of-type(${this.streak + 1})`).innerHTML = '';
-        } else if (this.options.difficulty == "hard") {  // lose all marks!
+            $(`#marks table td:nth-of-type(${this.streak + 1})`).innerHTML = '';
+        } else if (this.options.difficulty == 'hard') {  // lose all marks!
             this.streak == 0;
-            document.querySelector(`#marks table td`).innerHTML = '';
+            $$(`#marks table td`).forEach(el => el.innerHTML = '');
         }
 
         // play correct answer jingle
@@ -412,7 +412,7 @@ class Game {
     // Speak something and resolve the promise after speaking completes.
     // Call with await(speak) for synchronous behavior.
     async speak(text, pitch = 1, rate = 1) {
-        text = text.replace('÷', ' divided by ');
+        text = text.replace('÷', ' divided by ').replace('/', ' divided by ');
         return new Promise((resolve) => {
             const synth = window.speechSynthesis;
             const utterThis = new SpeechSynthesisUtterance(text);
