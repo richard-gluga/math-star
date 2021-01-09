@@ -121,6 +121,7 @@ body {
 .mdl-dialog {
     width: 90vw;
     text-align: left;
+    max-width: 600px;
 }
 .mdl-dialog .mdl-textfield, .mdl-dialog input[type="number"] {
     width: 100%;

@@ -30,6 +30,7 @@ class Options {
         this.op_mul = true; // boolean
         this.op_div = false; // boolean
 
+        this.difficulty = 'normal';  // [easy, normal, hard]
         this.max_num = 10;  // number
         this.fix_num = null;  // number
         this.delay_ms = 3000; // number;
@@ -174,16 +175,22 @@ class Game {
     // it detects the wrong things, e.g. "6" can get detected as "sex", etc. We want to
     // avoid displaying inappropriate terms on the screen, so filter them out.
     censorAnswer(answer) {
-        const bannedTerms = ['sex'];
+        const bannedTerms = ['sex', 'suck', 'bum', 'pee', 'poo', 'poop'];
         return bannedTerms.some(v => answer.toLowerCase().includes(v));
     }
 
     async wrongAnswer(answer) {
         // TODO: update stats, update display
         $('#output').style.color = 'red';
-        if (this.streak > 0) this.streak--;
 
-        document.querySelector(`#marks table td:nth-of-type(${this.streak + 1})`).innerHTML = '';
+        // for 'easy' mode, don't lose any marks for wrong answers, otherwise...
+        if (this.options.difficulty == 'normal') {  // lose one mark
+            if (this.streak > 0) this.streak--;
+            document.querySelector(`#marks table td:nth-of-type(${this.streak + 1})`).innerHTML = '';
+        } else if (this.options.difficulty == "hard") {  // lose all marks!
+            this.streak == 0;
+            document.querySelector(`#marks table td`).innerHTML = '';
+        }
 
         // play correct answer jingle
         await this.playSound('sfx/wrong1.mp3');
@@ -405,6 +412,7 @@ class Game {
     // Speak something and resolve the promise after speaking completes.
     // Call with await(speak) for synchronous behavior.
     async speak(text, pitch = 1, rate = 1) {
+        text = text.replace('÷', ' divided by ');
         return new Promise((resolve) => {
             const synth = window.speechSynthesis;
             const utterThis = new SpeechSynthesisUtterance(text);
@@ -449,6 +457,9 @@ class App {
             this.options.max_num = parseInt($('#max_num').value, 10);
             this.options.fix_num = parseInt($('#fix_num').value, 10);
 
+            this.options.difficulty = $(`#difficulty option:checked`).value;
+
+            console.log(this.options);
             // close dialog & play/unpause game.
             $('#settings-dialog').close();
             this.game.play();
@@ -503,6 +514,9 @@ class App {
         $('#fix_num').value = this.options.fix_num == null || isNaN(this.options.fix_num) ? null : this.options.fix_num;
         $('#fix_num').parentElement.MaterialTextfield.checkDirty();
 
+        // Bind difficulty setting.
+        $(`#difficulty [value="${this.options.difficulty}"]`).selected = true;
+        $('#difficulty').parentElement.MaterialTextfield.checkDirty();
 
         componentHandler.upgradeDom();
 
