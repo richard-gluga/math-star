@@ -129,6 +129,9 @@ body {
 #settings-dialog .operators .mdl-switch {
     width: 30px;
 }
+#settings-dialog .operators .mdl-switch .mdl-switch__label{
+    left: 15px;
+}
 #settings-dialog .operators .mdl-switch .mdl-switch__label {
     font-size: 1.9em;
     font-weight: bold;
