@@ -1,3 +1,10 @@
+html {
+    font-size: 16px;
+}
+.mdl-dialog__title {
+    font-size: 1.5rem;
+}
+
 body {
     padding: 0;
     margin: 0;
@@ -115,6 +122,9 @@ body {
     width: 90vw;
     text-align: left;
 }
+.mdl-dialog .mdl-textfield, .mdl-dialog input[type="number"] {
+    width: 100%;
+}
 
 #settings-dialog .operators .mdl-switch {
     width: 40px;
@@ -132,10 +142,6 @@ body {
 #settings-dialog .row-spacer {
     display: block;
     height: 20px;
-}
-
-#settings-dialog input[type=number] {
-    font-size: 1.5em;
 }
 
 
