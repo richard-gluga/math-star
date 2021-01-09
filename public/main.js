@@ -142,8 +142,10 @@ class Game {
     }
 
     // Process the answer that was given by the user (detected via speech recognition)
-    async processAnswer(answer) {
+    async processAnswer(answerRaw) {
         if (this.paused) return;
+
+        let answer = this.numberUtils.wordsToDigits(answerRaw);
 
         $('#output').textContent = answer;
 
@@ -356,9 +358,11 @@ class Game {
             // can trigger retry behavior. This prevents getting stuck from rare inconsistent
             // missing events from the speech recognizer api.
             const timeout = setTimeout(() => {
+                recognition.abort();
                 resolve(null);
-                console.warn("No events from speech recognizer after 5s, aborting.");
-            }, 7000);
+                console.warn("No events from speech recognizer after 14s, aborting.");
+                this.app.showError('No speech, try again.');
+            }, 14000);
 
             // Called from speech recognizer event handlers after words were detected.
             const processResult = (event) => {
@@ -406,7 +410,12 @@ class Game {
                 // example errors: 'network', 'no-speech', 'not-allowed'
                 if (event.error == 'not-allowed') {
                     this.pause();
+                    this.app.showError('No microphone permission');
                     this.app.checkMicrophonePermissions(true);
+                } else if (event.error == 'network') {
+                    this.app.showError('No internet connection');                    
+                } else if (event.error == 'no-speech') {
+                    this.app.showError('No speech, try again.');
                 }
                 console.log('error: ', event.error);
                 recognition.stop();
@@ -443,13 +452,20 @@ class App {
     constructor() {
         this.options = new Options();
         this.game = new Game(this.options, this);
+        this.numberUtils = new NumberUtils(10000);
     }
 
     async run() {
         this.initEventHandlers();
         this.initScreenWakeLock();
+
         await this.checkMicrophonePermissions();
         this.openSettingsDialog();
+    }
+
+    showError(msg) {
+        console.log($('#toast-error'));
+        $('#toast-error').MaterialSnackbar.showSnackbar({message: msg})
     }
 
     initEventHandlers() {
