@@ -269,12 +269,20 @@ class Game {
     getNextQuestion() {
         const op = this.getRandOperator();
 
+        let min = 0;
+        if (this.options.difficulty == 'hard') {
+            min = Math.ceil(this.options.max_num / 2);
+        }
+        if (min == 0 && op == '/') {
+            min = 1;
+        }
+
         // Avoid zeros if we're doing division.
-        let term1 = this.getRandomIntInclusive(op == '/' ? 1 : 0, this.options.max_num);
+        let term1 = this.getRandomIntInclusive(min, this.options.max_num);
         console.log(Number.isInteger(this.options.fix_num));
         let term2 = Number.isInteger(this.options.fix_num) && (this.options.fix_num > 0 || op != '/')
             ? this.options.fix_num
-            : this.getRandomIntInclusive(op == '/' ? 1 : 0, this.options.max_num);
+            : this.getRandomIntInclusive(min, this.options.max_num);
         
 
         // Prevent negative answers for now (speech recognition not as reliable).
