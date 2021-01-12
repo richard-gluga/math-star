@@ -1,19 +1,14 @@
-// Register some helper aliases. NOTE - we are NOT using jQuery in this app (it's 2021...).
-$ = document.querySelector.bind(document);
-$$ = document.querySelectorAll.bind(document);
+import device from './modules/device.js';
+import media from './modules/media.js';
+import numbers from './modules/numbers.js';
+import speech from './modules/speech.js';
 
-// Aliases for the Speech Recognition API classes to be used in the program.
-window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-window.SpeechGrammarList = window.SpeechGrammarList || window.webkitSpeechGrammarList;
-window.SpeechRecognitionEvent = window.SpeechRecognitionEvent || window.webkitSpeechRecognitionEvent;
+// Register some helper aliases. NOTE - we are NOT using jQuery in this app (it's 2021...).
+const $ = document.querySelector.bind(document);
+const $$ = document.querySelectorAll.bind(document);
 
 // Feature detection to check if everything works, otherwise abandon.
-if (typeof HTMLDialogElement === 'function'
-    && window.SpeechRecognition
-    && window.SpeechGrammarList
-    && window.SpeechRecognitionEvent
-    && window.speechSynthesis
-    && window.SpeechSynthesisUtterance) {
+if (typeof HTMLDialogElement === 'function' && speech.isBrowserSupported()) {
     console.info('All needed features supported, phew!');
 } else {
     $('#game-panel').style.display = 'none';
@@ -46,7 +41,6 @@ class Game {
 
     constructor(options, app) {
         this.options = options;
-        this.playingSounds = new Map();
         this.reset();
         this.app = app;
     }
@@ -83,22 +77,17 @@ class Game {
         this.paused = false;
 
         $('#fireworks').style.display = 'none';
-        // Try to stop all playing sound effects.
-        for (const [key, value] of this.playingSounds.entries()) {
-            if (value instanceof HTMLMediaElement) {
-                value.pause();
-            }
-        }
+        media.stopAllSounds();
 
         document.querySelector('#game-panel').style.display = 'block';
         $('#question').textContent = 'get ready';
-        await this.speak('get ready');
+        await speech.speak('get ready');
         $('#question').textContent = 'set';
-        await this.speak('set');
+        await speech.speak('set');
         $('#question').textContent = 'go';
-        await this.speak('go!');
-        console.log('Starting game.');
-        setTimeout(() => this.startNextRound(), 10);
+        await speech.speak('go!');
+        console.info('Starting game.');
+        this.startNextRound();
     }
 
     // Triggers next (or first) round of the game loop.
@@ -121,17 +110,19 @@ class Game {
     // Displays the next question in the UI to the user.
     async showNextQuestion() {
         $('#question').textContent = `${this.nextQuestion_formatted}`;
-        await this.speak(
-            this.nextQuestion_raw.replace('+', ' plus ').replace('-', ' minus ').replace('*', ' times '),
-            1.2, 1.2);
+        await speech.speak(
+            this.nextQuestion_raw.replace('+', ' plus ').replace('-', ' minus ').replace('*', ' times '));
     }
 
     async listenForAnswer() {
         if (this.paused) return;
 
         $('#output').textContent = '🎤';
-        const answer = await this.getSpeechResponse();
-        console.log('listenForAnswer got: ', answer);
+        const answer = await speech.getSpeechResponse((err) => {
+            // TODO - handle error types
+        });
+
+        console.info('listenForAnswer got: ', answer);
 
         if (answer && !this.censorAnswer(answer)) {
             this.processAnswer(answer);
@@ -145,7 +136,7 @@ class Game {
     async processAnswer(answerRaw) {
         if (this.paused) return;
 
-        let answer = this.app.numberUtils.wordsToDigits(answerRaw);
+        let answer = numbers.wordsToDigits(answerRaw);
 
         $('#output').textContent = answer;
 
@@ -157,7 +148,7 @@ class Game {
         const answerNum = parseFloat(answer, 10);
         if (isNaN(answerNum)) {
             $('#output').style.color = 'red';
-            await this.speak('Sorry, could you repeat that please?');
+            await speech.speak('Sorry, could you repeat that please?');
             return await this.listenForAnswer();
         } else if (answerNum == this.nextAnswer_expected) {
             await this.rightAnswer(answer);
@@ -195,13 +186,13 @@ class Game {
         }
 
         // play correct answer jingle
-        await this.playSound('sfx/wrong1.mp3');
+        await media.playSound('sfx/wrong1.mp3');
 
         const wrongAnswers = [
             'wrong', 'nope', 'oops', 'nada', 'boom boom', 'yikes', 'not even close', 'umm... no',
         ];
-        await this.speak(
-            wrongAnswers[this.getRandomIntInclusive(0, wrongAnswers.length - 1)] + ', ' + this.nextAnswer_expected,
+        await speech.speak(
+            wrongAnswers[numbers.getRandomIntInclusive(0, wrongAnswers.length - 1)] + ', ' + this.nextAnswer_expected,
             1.2, 1.2);
         return;
     }
@@ -219,13 +210,13 @@ class Game {
         document.querySelector(`#marks table td:nth-of-type(${this.streak})`).appendChild(img);
 
         // play correct answer jingle
-        await this.playSound('sfx/right1.mp3');
+        await media.playSound('sfx/right1.mp3');
 
         // play correct answer robot speech
         const rightAnswers = [
             'right', 'yep', 'you got it', 'correct', 'bingo', 'perfect',
         ];
-        await this.speak(rightAnswers[this.getRandomIntInclusive(0, rightAnswers.length - 1)], 1.2, 1.2);
+        await speech.speak(rightAnswers[numbers.getRandomIntInclusive(0, rightAnswers.length - 1)], 1.2, 1.2);
         return;
     }
 
@@ -233,8 +224,8 @@ class Game {
         // game over, congrats
         // show fireworks with sounds and play winning jingle
         $('#fireworks').style.display = 'block';
-        this.playSound('sfx/fireworks1.mp3');
-        await this.playSound('sfx/win1.mp3');
+        media.playSound('sfx/fireworks1.mp3');
+        await media.playSound('sfx/win1.mp3');
 
         // after winning jingle, say something 'funny'
         const congrats = [
@@ -245,26 +236,8 @@ class Game {
             `01101001, you got ${this.options.streak} right in a row, that's 11010101, well done`,
             `yo, well done, congratulations, you deserve to party, get your groove on`,
         ];
-        await this.speak(congrats[this.getRandomIntInclusive(0, congrats.length - 1)], 1.2, 1.2);
+        await speech.speak(congrats[numbers.getRandomIntInclusive(0, congrats.length - 1)], 1.2, 1.2);
         this.pause();  // will bring up options dialog
-    }
-
-    async playSound(url, delay = 200) {
-        const promise = new Promise(resolve => {
-            const sound = new Audio(url);
-            this.playingSounds.set(url, sound);  // Keep a reference to it so it can be paused if necessary.
-
-            sound.onended = () => {
-                this.playingSounds.delete(url);
-                setTimeout(() => resolve(), delay);
-            };
-            sound.play().then(() => {
-                // audio started playing, let it finish.
-            }).catch((err) => {
-                console.warn('Error playing audio: ', url, err);
-            });
-        });
-        return promise;
     }
 
     // Generates and returns a new question as a string expression.
@@ -280,11 +253,11 @@ class Game {
         }
 
         // Avoid zeros if we're doing division.
-        let term1 = this.getRandomIntInclusive(min, this.options.max_num);
-        console.log(Number.isInteger(this.options.fix_num));
+        let term1 = numbers.getRandomIntInclusive(min, this.options.max_num);
+        console.info(Number.isInteger(this.options.fix_num));
         let term2 = Number.isInteger(this.options.fix_num) && (this.options.fix_num > 0 || op != '/')
             ? this.options.fix_num
-            : this.getRandomIntInclusive(min, this.options.max_num);
+            : numbers.getRandomIntInclusive(min, this.options.max_num);
         
 
         // Prevent negative answers for now (speech recognition not as reliable).
@@ -311,7 +284,7 @@ class Game {
 
         if (selected < 1) throw new Error("Did not select any operators.");
 
-        const rand = this.getRandomIntInclusive(1, selected);
+        const rand = numbers.getRandomIntInclusive(1, selected);
         let op = '';
         let i = 1;
         if (!op && this.options.op_add && i++ == rand) op = '+';
@@ -325,124 +298,6 @@ class Game {
 
         return op;
     }
-
-    // Returns a random int between min and max, inclusive of both
-    getRandomIntInclusive(minInclusive, maxInclusive) {
-        const min = Math.ceil(minInclusive);
-        const max = Math.floor(maxInclusive);
-        return Math.floor(Math.random() * (max - min + 1) + min); //The maximum is inclusive and the minimum is inclusive
-    }
-
-    // Initializes a SpeechRecognition object with a grammar to recognize numbers up to maxNumber.
-    // Waits for the recognizer to detect a response, and returns it. Uses a new recognizer instance
-    // on every call since the recognizer API seems to misbehave after repeated usage.
-    // NOTE - can return null if there was an error/issue in detecting response. Caller can retry if needed.
-    async getSpeechResponse(maxNumber = 150) {
-        const promise = new Promise((resolve) => {
-
-            // Initialize a grammar to recognize numbers from 0 to maxNumber.
-            // NOTE - if maxNumber is too large (e.g. 1000), you'll get a 'network' error when starting the recognizer.
-            // I think there's a limit to the grammar size.
-            const grammar = '#JSGF V1.0; grammar numbers; public <number> = ' + [...Array(150).keys()].join(' | ') + ' ;'
-            const recognition = new SpeechRecognition();
-            this.recognition = recognition;		// save a handle to be able to abort on pause.
-            const speechRecognitionList = new SpeechGrammarList();
-            speechRecognitionList.addFromString(grammar, 1);
-            recognition.grammars = speechRecognitionList;
-            recognition.continuous = false;
-            recognition.lang = 'en-US';
-            recognition.interimResults = false;
-            recognition.maxAlternatives = 1;
-
-            // If nothing got processed after 5 seconds, timeout and return null, so client
-            // can trigger retry behavior. This prevents getting stuck from rare inconsistent
-            // missing events from the speech recognizer api.
-            const timeout = setTimeout(() => {
-                recognition.abort();
-                resolve(null);
-                console.warn("No events from speech recognizer after 14s, aborting.");
-                this.app.showError('No speech, try again.');
-            }, 14000);
-
-            // Called from speech recognizer event handlers after words were detected.
-            const processResult = (event) => {
-                clearTimeout(timeout);
-                if (event && event.results && event.results.length && event.results[0].length) {
-                    const numberOrWords = event.results[0][0].transcript;
-                    console.info('Recognized phrase: ', numberOrWords);
-                    // stop is not really synchronos for some reason.
-                    resolve(numberOrWords);
-                } else {
-                    resolve(null);
-                }
-            };
-
-            // This should be the main event called when results are detected.
-            recognition.onresult = (event) => {
-                recognition.stop();
-                setTimeout(() => processResult(event), 10);
-            }
-
-            // Triggered when the speech being processed ended.
-            recognition.onspeechend = (event) => {
-                // Note this doesn't really trigger in regular execution, but very rarely it does.
-                // The API seems a little buggy and inconsistent. The event property here does not
-                // contain any results.
-                console.info('speech end');
-                // We don't do anything else here, wait for other events to trigger, e.g. onresult.
-                // If nothing else triggers, we'll have a timeout that resolves(null).
-            }
-
-            recognition.onnomatch = (event) => {
-                // NOTE - this doesn't really trigger regardless of the grammar, it matches
-                // anything and always returns something, or times out and returns error = 'no-speech'
-                // The docs say if this does trigger, it may still have event.results object.
-                console.warn('No match.');
-                setTimeout(() => processResult(event), 10); // returns no answer
-            }
-
-            // This always triggers when the engine disconnects. 
-            recognition.onend = (event) => {
-                console.info('Speech recognition service disconnected');
-            }
-
-            recognition.onerror = (event) => {
-                // example errors: 'network', 'no-speech', 'not-allowed'
-                if (event.error == 'not-allowed') {
-                    this.pause();
-                    this.app.showError('No microphone permission');
-                    this.app.checkMicrophonePermissions(true);
-                } else if (event.error == 'network') {
-                    this.app.showError('No internet connection');                    
-                } else if (event.error == 'no-speech') {
-                    this.app.showError('No speech, try again.');
-                }
-                console.log('error: ', event.error);
-                recognition.stop();
-                setTimeout(() => processResult(event), 10); // returns no answer
-            }
-
-            recognition.start();
-        });
-
-        return promise;
-    }
-
-    // Speak something and resolve the promise after speaking completes.
-    // Call with await(speak) for synchronous behavior.
-    async speak(text, pitch = 1, rate = 1) {
-        text = text.replace('÷', ' divided by ').replace('/', ' divided by ');
-        return new Promise((resolve) => {
-            const synth = window.speechSynthesis;
-            const utterThis = new SpeechSynthesisUtterance(text);
-            utterThis.pitch = 1;
-            utterThis.rate = 1;
-            utterThis.onend = () => {
-                resolve();  // resolves promise after speaking finished
-            }
-            synth.speak(utterThis);
-        });
-    }
 }
 
 // Main driver for application logic, instantiated on page load.
@@ -452,15 +307,24 @@ class App {
     constructor() {
         this.options = new Options();
         this.game = new Game(this.options, this);
-        this.numberUtils = new NumberUtils(10000);
     }
 
     async run() {
         this.initEventHandlers();
-        this.initScreenWakeLock();
+        device.initScreenWakeLock();
 
-        await this.checkMicrophonePermissions();
-        this.openSettingsDialog();
+        const state = await speech.checkMicrophonePermissions(false, () => {
+            // Callback if initial permission is 'prompt', and then changes
+            // to 'granted' later. So make the app auto-continue.
+            $('#mic-permissions-dialog').close();
+            this.openSettingsDialog();    
+        });  // state values = ['granted', 'prompt', 'denied']
+
+        if (state != 'granted') {  // This is the initial response from permission check.
+            this.openMicPermissionsDialog(state);
+        } else {  // if already granted, just continue without showing perms dialog.
+            this.openSettingsDialog();
+        }
     }
 
     showError(msg) {
@@ -499,7 +363,7 @@ class App {
         $('#about-btn').onclick = () => this.openAboutDialog();
         $('#about-close-btn').onclick = () => $('#about-dialog').close();
 
-        $('#permissions-dialog').addEventListener('cancel', (event) => {
+        $('#mic-permissions-dialog').addEventListener('cancel', (event) => {
             event.preventDefault();
             return false;
         });
@@ -548,90 +412,24 @@ class App {
         $('#settings-dialog').showModal();
     }
 
-
-    // Prevent screen from sleeping while tab is visible.
-    initScreenWakeLock() {
-        if (!('wakeLock' in navigator)) {
-            console.info('WakeLock API not supported in browser. Screen may sleep from inactivity.');
-            return;
+    openMicPermissionsDialog(state) {
+        // Show the right info block based on microphone permission state.
+        if (state == 'prompt') {
+            $('#mic-permissions-dialog .state-prompt').style.display = 'block';
+        } else if (state == 'denied') {
+            $('#mic-permissions-dialog .state-denied').style.display = 'block';
         }
 
-        let wakeLock = null;
-
-        const requestWakeLock = async () => {
-            try {
-              console.log('Requesting Screen Wake lock...');
-              wakeLock = await navigator.wakeLock.request('screen');
-              console.log('...lock received.');
-              wakeLock.addEventListener('release', () => {
-                console.log('Screen Wake Lock released:', wakeLock.released);
-              });
-            } catch (err) {
-              console.error(`WakeLock error: ${err.name}, ${err.message}`);
-            }
+        // Wire the close button event.
+        $('#permissions-close-btn').onclick = () => {
+            $('#mic-permissions-dialog').close();
+            this.openSettingsDialog();    
         };
 
-        const handleVisibilityChange = async () => {
-            if (wakeLock !== null && document.visibilityState === 'visible') {
-              await requestWakeLock();
-            }
-        };
-  
-        document.addEventListener('visibilitychange', handleVisibilityChange);
-        requestWakeLock();
+        // Show the dialog.
+        $('#mic-permissions-dialog').showModal();
     }
 
-    async checkMicrophonePermissions(skipTriggerSpeechResponse = false) {
-        const promise = new Promise((resolve) => {
-            if (!skipTriggerSpeechResponse) this.game.getSpeechResponse();  // this triggers the microphone permissions
-            setTimeout(() => {  // give the microphone permission request prompt some time to trigger
-                // Check permissions for microphone.
-                navigator.permissions.query({ name: 'microphone' }).then(function (result) {
-                    if (result.state == 'granted') {
-                        console.info('micrphone permission is granted, phew!');
-                        resolve();
-                    } else if (result.state == 'prompt') {
-                        console.info('prompting user for microphone permissions...');
-                        // Clicking continue/close button returns from function so game can continue.
-                        $('#permissions-close-btn').onclick = () => {
-                            $('#permissions-dialog').close();
-                            resolve();
-                        }
-
-                        // Show the correct prompt and open warning dialog.
-                        $('#permissions-dialog .state-prompt').style.display = 'block';
-                        $('#permissions-dialog').showModal();
-
-                        // Add a re-check loop, so when user allows the microphone permission, we 
-                        // close the dialog and continue automatically.
-                        const recheck = () => {
-                            console.info('...waiting for microphone permission');
-                            navigator.permissions.query({ name: 'microphone' }).then(function (result) {
-                                if (result.state == 'granted') {
-                                    $('#permissions-dialog').close();
-                                    resolve();
-                                } else if (result.state == 'prompt') {
-                                    setTimeout(() => recheck(), 1000);
-                                }
-                            });
-                        };
-                        recheck();
-
-                    } else {
-                        // Clicking continue/close button returns from function so game can continue.
-                        $('#permissions-close-btn').onclick = () => {
-                            $('#permissions-dialog').close();
-                            resolve();
-                        }
-
-                        $('#permissions-dialog .state-deny').style.display = 'block';
-                        $('#permissions-dialog').showModal();
-                    }
-                });
-            }, 50);
-        });
-        return promise;
-    }
 }
 
 const myApp = new App();
