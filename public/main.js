@@ -119,7 +119,15 @@ class Game {
 
         $('#output').textContent = '🎤';
         const answer = await speech.getSpeechResponse((err) => {
-            // TODO - handle error types
+            if (err == 'no-speech') {
+                this.showError('No speech detected, try again.');
+            }
+            if (err == 'network') {
+                this.showError('No internet connection.');
+            }
+            if (err == 'not-allowed') {
+                this.showError('No microphone permission.');
+            }
         });
 
         console.info('listenForAnswer got: ', answer);
